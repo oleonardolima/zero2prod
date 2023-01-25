@@ -14,10 +14,19 @@ pub struct DatabaseSettings {
 }
 
 impl DatabaseSettings {
+    /// Generates a Postgres database connection string
     pub fn connection_string(&self) -> String {
         format!(
             "postgres://{}:{}@{}:{}/{}",
             self.username, self.password, self.host, self.port, self.database_name
+        )
+    }
+
+    /// Generates a Postgres instance connection string
+    pub fn connection_string_without_db(&self) -> String {
+        format!(
+            "postgres://{}:{}@{}:{}",
+            self.username, self.password, self.host, self.port
         )
     }
 }
