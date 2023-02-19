@@ -1,5 +1,5 @@
 # use the Rust stable releas as base image
-FROM rust:1.59.0
+FROM rust:1.64.0
 
 # switch working directory to app, creates the folder if not exists
 WORKDIR /app
@@ -14,7 +14,7 @@ COPY . .
 ENV SQLX_OFFLINE=true
 
 # build the project with release profile for better optimization
-RUN cargo build --release
+RUN cargo build --release --bin zero2prod
 
 # when `docker run` is executed, launch the binary
 ENTRYPOINT ["./target/release/zero2prod"]
