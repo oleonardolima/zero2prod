@@ -13,6 +13,9 @@ COPY . .
 # uses the offline sqlx features, will using sqlx-data.json during compile time
 ENV SQLX_OFFLINE=true
 
+# uses the production configuration file
+ENV APP_ENVIRONMENT=production
+
 # build the project with release profile for better optimization
 RUN cargo build --release --bin zero2prod
 
