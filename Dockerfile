@@ -1,5 +1,9 @@
-# use the Rust stable releas as base image
-FROM rust:1.64.0
+###################
+## BUILDER STAGE ##
+###################
+
+# use the Rust stable release as base image
+FROM rust:1.64.0-slim AS builder
 
 # switch working directory to app, creates the folder if not exists
 WORKDIR /app
@@ -13,11 +17,26 @@ COPY . .
 # uses the offline sqlx features, will using sqlx-data.json during compile time
 ENV SQLX_OFFLINE=true
 
-# uses the production configuration file
-ENV APP_ENVIRONMENT=production
-
 # build the project with release profile for better optimization
 RUN cargo build --release --bin zero2prod
 
+###################
+## RUNTIME STAGE ##
+###################
+
+# use the Rust stable release as base image
+FROM rust:1.64.0-slim AS runtime
+
+# switch working directory to app, creates the folder if not exists
+WORKDIR /app
+
+# copy only the binary release target and configuration files
+COPY --from=builder /app/target/release/zero2prod zero2prod
+
+COPY configuration configuration
+
+# uses the production configuration file
+ENV APP_ENVIRONMENT=production
+
 # when `docker run` is executed, launch the binary
-ENTRYPOINT ["./target/release/zero2prod"]
+ENTRYPOINT ["./zero2prod"]
