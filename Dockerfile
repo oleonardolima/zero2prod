@@ -3,7 +3,7 @@
 ###################
 
 # use the Rust stable release as base image
-FROM rust:1.64.0-slim AS builder
+FROM lukemathwalker/cargo-chef:latest-rust-1.64.0 AS chef
 
 # switch working directory to app, creates the folder if not exists
 WORKDIR /app
@@ -11,7 +11,22 @@ WORKDIR /app
 # install all the required system dependencies for the linking config
 RUN apt update && apt install lld clang -y
 
+
+FROM chef as planner
+
 # copy all files and source from context working environment to Docker image
+COPY . .
+
+# compute the lock-like recipe.json file
+RUN cargo chef prepare --recipe-path recipe.json
+
+
+FROM chef as builder
+
+COPY --from=planner /app/recipe.json recipe.json
+
+RUN cargo chef cook --release --recipe-path recipe.json
+
 COPY . .
 
 # uses the offline sqlx features, will using sqlx-data.json during compile time
