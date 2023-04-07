@@ -156,3 +156,43 @@ async fn subscribe_returns_a_400_when_data_is_missing() {
         );
     }
 }
+
+#[tokio::test]
+async fn subscribe_returns_a_200_when_fields_are_present_but_empty() {
+    // arrange
+    let app: TestApp = spawn_app().await;
+    let client = reqwest::Client::new();
+
+    // this is an example of table driven tests (https://github.com/golang/go/wiki/TableDrivenTests)
+    let test_cases = vec![
+        ("name=fyodor%karamazov&email=", "empty email value"),
+        (
+            "name=&email=dimitri_karamazov@email.com",
+            "empty name value",
+        ),
+        (
+            "name=smerdiakov&email=not-smerdiakov-email",
+            "invalid email value",
+        ),
+    ];
+
+    // act
+    for (body, error_message) in test_cases {
+        let response = client
+            .post(format!("{}/subscriptions", app.address))
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(body)
+            .send()
+            .await
+            .expect("Failed to execute the request.");
+
+        // assert
+        // TODO: (@oleonardolima) This should not pass, it currently passes as the fields are not being validated.
+        assert_eq!(
+            200,
+            response.status().as_u16(),
+            "The API did not return a 200 OK when the payload was {}",
+            description
+        );
+    }
+}
